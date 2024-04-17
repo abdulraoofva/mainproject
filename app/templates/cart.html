@@ -1,0 +1,140 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- Add your custom CSS styles if needed -->
+    <style>
+        /* Custom CSS for plus and minus buttons */
+        .quantity-control {
+            display: flex;
+            align-items: center;
+        }
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Cart</h1>
+        <table class="table" id="cart-table">
+            <thead>
+                <tr>
+                    <th>Accessory</th>
+                    <th>Thumbnail</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                    {% if item.user == request.user %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>
+                                {% if item.product.thumbnail %}
+                                    <img src="{{ item.product.thumbnail.url }}" alt="Thumbnail" style="width: 100px;">
+                                {% else %}
+                                    No image available
+                                {% endif %}
+                            </td>
+                            
+                            <td>Rs{{ item.product.price }}</td>
+                            <td class="quantity-control">
+                                <!-- Minus button -->
+                                <button class="btn btn-sm btn-secondary quantity-btn" data-action="minus" data-item-id="{{ item.pk }}">-</button>
+                                <!-- Quantity input -->
+                                <input type="text" class="form-control quantity-input" id="quantity-{{ item.pk }}" value="{{ item.quantity }}" readonly>
+                                <!-- Plus button -->
+                                <button class="btn btn-sm btn-secondary quantity-btn" data-action="plus" data-item-id="{{ item.pk }}">+</button>
+                            </td>
+                            <td>Rs<span id="subtotal-{{ item.pk }}">{{ item.subtotal }}</span></td>
+                            <td>
+                                <form action="{% url 'remove_from_cart' item.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                {% if cart_items %}
+                    <tr id="total-row">
+                        <td colspan="4"></td>
+                        <td><strong>Total Price:</strong></td>
+                        <td id="total-price">Rs{{ total_price }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="6">
+                            <!-- Checkout button -->
+                            <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">Your cart is empty.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantityControls = document.querySelectorAll('.quantity-btn');
+
+            quantityControls.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const itemId = this.dataset.itemId;
+                    const action = this.dataset.action;
+                    updateCartItem(itemId, action);
+                });
+            });
+
+            function updateCartItem(itemId, action) {
+                const quantityInput = document.getElementById(`quantity-${itemId}`);
+                const subtotalSpan = document.getElementById(`subtotal-${itemId}`);
+                let quantity = parseInt(quantityInput.value);
+
+                if (action === 'plus' && quantity < 4) {
+                    quantity += 1;
+                } else if (action === 'minus' && quantity > 1) {
+                    quantity -= 1;
+                }
+
+                fetch(`/update_cart/${itemId}/${quantity}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        quantityInput.value = data.quantity;
+                        subtotalSpan.textContent = `Rs${data.subtotal}`;
+                        updateTotalPrice();
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            function updateTotalPrice() {
+                const subtotalElements = document.querySelectorAll('[id^="subtotal-"]');
+                let totalPrice = 0;
+
+                subtotalElements.forEach(span => {
+                    totalPrice += parseFloat(span.textContent.replace('Rs', ''));
+                });
+
+                document.getElementById('total-price').textContent = `Rs${totalPrice.toFixed(2)}`;
+            }
+
+            updateTotalPrice(); // Initial update of total price
+        });
+    </script>
+</body>
+</html>

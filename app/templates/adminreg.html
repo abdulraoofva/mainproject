@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* CSS styles for the sidebar */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+
+        /* CSS styles for the main content */
+        .main-content {
+            margin-left: 250px; /* Same width as the sidebar */
+            padding: 20px;
+        }
+
+        /* Rest of your existing CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .user-table {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+
+        .user-table h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        select {
+            padding: 5px;
+        }
+
+        .download-link {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .download-link:hover {
+            text-decoration: underline;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <a href="{% url 'addtools' %}">Add Accessories</a>
+    <!-- Add more sidebar links as needed -->
+</div>
+
+<!-- Main content -->
+<div class="main-content">
+    <h1>Admin Dashboard</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Table for Admin Users -->
+        <div id="admin-users" class="user-table">
+            <h2>Admin</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Date of Birth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in admin_users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.dob }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table for Normal Users -->
+        <div id="normal_users" class="user-table">
+            <h2>Normal Users</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Date of Birth</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in normal_users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.dob }}</td>
+                            <td class="checkbox-label">
+                                {% if not user.is_superuser %}
+                                    <input type="checkbox" name="user_status_{{ user.email }}" {% if user.is_active %}checked{% endif %}>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Submit button for Normal Users -->
+        <input type="submit" name="update_normal_users" value="Update Normal Users Status">
+        
+        <!-- Table for Car Owners -->
+        <div id="carowners" class="user-table">
+            <h2>Car Owners</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Venue Name</th>
+                        <th>Contact Number</th>
+                        <th>Document</th>
+                        <th>Address</th>
+                        <th>Location</th>
+                        <th>Proposal Status</th>
+                        <th>Download PDF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for carowner in car_owners %}
+                        <tr>
+                            <td>{{ carowner.email }}</td>
+                            <td>{{ carowner.venue_name }}</td>
+                            <td>{{ carowner.contact_number }}</td>
+                            <td>{{ carowner.document }}</td>
+                            <td>{{ carowner.address }}</td>
+                            <td>{{ carowner.location }}</td>
+                            <td>
+                                <select name="proposal_status_{{ carowner.email }}">
+                                    <option value="Pending" {% if carowner.proposal_status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Accepted" {% if carowner.proposal_status == 'Accepted' %}selected{% endif %}>Accepted</option>
+                                    <option value="Rejected" {% if carowner.proposal_status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                </select>
+                            </td>
+                            <td>
+                                <a class="download-link" href="{% url 'download_pdf' carowner.email %}" target="_blank">Download PDF</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Submit button for Car Owners -->
+        <input type="submit" name="update_car_owners" value="Update Car Owners Proposal Status">
+        
+        <!-- Table for Drivers -->
+        <div id="drivers" class="user-table">
+            <h2>Drivers</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Driver Name</th>
+                        <th>Email</th>
+                        <th>Contact Number</th>
+                        <th>Driver License</th>
+                        <th>Conduct Certificate</th>
+                        <th>Address</th>
+                        <th>Location</th>
+                        <th>District</th>
+                        <th>Photo</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for driver in drivers %}
+                        <tr>
+                            <td>{{ driver.driver_name }}</td>
+                            <td>{{ driver.email }}</td>
+                            <td>{{ driver.contact_number }}</td>
+                            <td>{{ driver.driver_license }}</td>
+                            <td>{{ driver.conduct_certificate }}</td>
+                            <td>{{ driver.address }}</td>
+                            <td>{{ driver.location }}</td>
+                            <td>{{ driver.district }}</td>
+                            <td>{{ driver.photo }}</td>
+                            <td>{{ driver.status }}</td>
+                            <td class="button-container">
+                                <button type="submit" name="accept_driver_{{ driver.email }}">Accept</button>
+                                <button type="submit" name="reject_driver_{{ driver.email }}">Reject</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Submit button for Drivers -->
+        <input type="submit" name="update_drivers_status" value="Update Drivers Status">
+        
+        <!-- Add more table containers for other user roles as needed -->
+    </form>
+    
+    <a href="{% url 'logout' %}" class="logout-button">Logout</a>
+</div>
+
+</body>
+</html>

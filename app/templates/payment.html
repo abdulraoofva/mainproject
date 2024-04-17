@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <!-- Include Razorpay script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <h1>Payment Details</h1>
+    <p>Total Amount: Rs {{ total_price }}</p>
+    
+    <!-- Display a payment form -->
+    <form action="{% url 'process_payment' %}" method="POST">
+        {% csrf_token %}
+        <!-- Add hidden input fields for Razorpay order ID and other necessary data -->
+        <input type="hidden" name="razorpay_order_id" value="{{ razorpay_order_id }}">
+        <input type="hidden" name="razorpay_key_id" value="{{ razorpay_key_id }}">
+        
+        <!-- Include Razorpay checkout button -->
+        <button type="button" id="rzp-button">Pay Now</button>
+    </form>
+
+    <script>
+        // Handle payment processing using Razorpay
+        var options = {
+            "key": "{{ razorpay_key_id }}", // Your Razorpay key ID
+            "amount": {{ total_price|floatformat:"2"|multiply:100|floatformat:"0" }}, // Amount in paisa
+            "currency": "INR",
+            "name": "Your Company Name",
+            "description": "Payment for Order",
+            "order_id": "{{ razorpay_order_id }}", // Razorpay order ID
+            "handler": function (response){
+                // Redirect to a success page or handle success response
+                window.location.href = "{% url 'payment_success' %}";
+            },
+            "prefill": {
+                "name": "Your Name",
+                "email": "your.email@example.com",
+                "contact": "Your Contact Number"
+            },
+            "theme": {
+                "color": "#3399cc" // Change theme color if needed
+            }
+        };
+        var rzp = new Razorpay(options);
+        document.getElementById('rzp-button').onclick = function(e){
+            rzp.open();
+            e.preventDefault();
+        };
+    </script>
+</body>
+</html>

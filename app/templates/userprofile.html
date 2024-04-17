@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+    <style>
+        /* Reset some default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header styles */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* Navigation styles */
+        nav {
+            background-color: #444;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+        }
+        nav ul {
+            list-style-type: none;
+        }
+        nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Container styles */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Profile section styles */
+        .profile {
+            text-align: center;
+            padding: 20px;
+        }
+        .profile img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #333;
+        }
+        .profile h1 {
+            margin-top: 10px;
+            font-size: 24px;
+        }
+
+        /* User details styles */
+        .user-details {
+            margin-top: 20px;
+        }
+        .user-details p {
+            margin: 10px 0;
+        }
+        .user-details strong {
+            font-weight: bold;
+        }
+
+        /* Form for updating user details */
+        .update-form {
+            margin-top: 20px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .update-form label {
+            display: block;
+            margin-top: 10px;
+        }
+        .update-form input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .update-form button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+                .user-details {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        .detail-label {
+            font-weight: bold;
+        }
+
+        .detail-value {
+            color: #555;
+        }
+
+    </style>
+    
+</head>
+<body>
+    <header>
+        <h1>User Profile</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{% url 'index2' %}">Home</a></li>
+            <!-- Add more navigation links as needed -->
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="profile">
+            <img src="{% static "..\static\img\bat.png" %}" alt="User Profile Image">
+            <h1>Hello, {{ user.first_name }} {{ user.last_name }}</h1>
+        </div>
+        <div class="user-details">
+            <h2>Your Details</h2>
+            <div class="detail-item">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">{{ user.email }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Role:</span>
+                <span class="detail-value">{{ user.role }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Date of Birth:</span>
+                <span class="detail-value">{{ user.dob }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Phone Number:</span>
+                <span class="detail-value">{{ user.phone }}</span>
+            </div>
+            <!-- You can add more user details here as needed -->
+        </div>
+
+        <!-- Form for updating user details -->
+        <div class="update-form">
+            <h2>Update Your Details:</h2>
+            <form method="POST" action="{% url 'update_user_details' %}">
+                {% csrf_token %}
+
+                <label for="new_dob">New Date of Birth:</label>
+                <input type="date" id="new_dob" name="new_dob" value="{{ formatted_dob }}">
+
+                <label for="new_first_name">New First Name:</label>
+                <input type="text" id="new_first_name" name="new_first_name" value="{{ user.first_name }}">
+
+                <label for="new_last_name">New Last Name:</label>
+                <input type="text" id="new_last_name" name="new_last_name" value="{{ user.last_name }}">
+
+                <label for="new_phone">New Phone Number:</label>
+                <input type="text" id="new_phone" name="new_phone" value="{{ user.phone }}">
+
+                <button type="submit" id="submitt">Update Profile</button>
+            </form>
+        </div>
+    </div>
+    
+</body>
+</html>

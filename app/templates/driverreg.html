@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+        }
+
+        video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <video autoplay muted loop>
+        
+        <source src="{% static '..\static\img\video.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <header>
+        <h1>DRIVER REGISTRATION</h1>
+    </header>
+
+    <div class="container">
+        <h2>Register as a driver and start your journey with Wheelways</h2>
+        <h3>Driver Registration Form</h3>
+
+        <form method="post" action="{% url 'driverreg' %}" enctype="multipart/form-data" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="driver-name">Driver Name:</label>
+                <input type="text" id="driver-name" name="driver_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <span class="error-message" id="email-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="contact-number">Contact Number:</label>
+                <input type="text" id="contact-number" name="contact_number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="driver-license">Driver's License (PDF):</label>
+                <input type="file" id="driver-license" name="driver_license" accept=".pdf" required>
+            </div>
+
+            <div class="form-group">
+                <label for="conduct-certificate">Conduct Certificate (PDF):</label>
+                <input type="file" id="conduct-certificate" name="conduct_certificate" accept=".pdf" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Driver Address:</label>
+                <textarea id="address" name="address" rows="4" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" required placeholder="Enter location">
+            </div>
+
+            <div class="form-group">
+                <label for="district">District:</label>
+                <input type="text" id="district" name="district" required>
+            </div>
+
+            <div class="form-group">
+                <label for="photo">Driver's Photo:</label>
+                <input type="file" id="photo" name="photo" accept="image/*" required>
+            </div>
+
+            <button type="submit">Submit Registration</button>
+        </form>
+    </div>
+
+    <script>
+        // Function to validate email format
+        function validateEmail(email) {
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+    
+        // Function to validate name (should contain only letters)
+        function validateName(name) {
+            var nameRegex = /^[a-zA-Z\s]+$/;
+            return nameRegex.test(name);
+        }
+    
+        // Function to validate contact number (should contain exactly 10 numbers)
+        function validateContactNumber(number) {
+            var numberRegex = /^\d{10}$/;
+            return numberRegex.test(number);
+        }
+    
+        // Function to display error message for specific field
+        function displayError(fieldId, errorMessage) {
+            var errorSpan = document.getElementById(fieldId + "-error");
+            errorSpan.textContent = errorMessage;
+        }
+    
+        // Function to clear error message for specific field
+        function clearError(fieldId) {
+            var errorSpan = document.getElementById(fieldId + "-error");
+            errorSpan.textContent = "";
+        }
+    
+        // Event listener for keyup event on name field
+        document.getElementById("driver-name").addEventListener("keyup", function() {
+            if (!validateName(this.value)) {
+                displayError("driver-name", "Name should contain only letters.");
+            } else {
+                clearError("driver-name");
+            }
+        });
+    
+        // Event listener for keyup event on email field
+        document.getElementById("email").addEventListener("keyup", function() {
+            if (!validateEmail(this.value)) {
+                displayError("email", "Please enter a valid email address.");
+            } else {
+                clearError("email");
+            }
+        });
+    
+        // Event listener for keyup event on contact number field
+        document.getElementById("contact-number").addEventListener("keyup", function() {
+            if (!validateContactNumber(this.value)) {
+                displayError("contact-number", "Contact number should contain exactly 10 numbers.");
+            } else {
+                clearError("contact-number");
+            }
+        });
+    
+        // Function to validate form before submission
+        function validateForm() {
+            // Validate name
+            var nameInput = document.getElementById("driver-name");
+            if (!validateName(nameInput.value)) {
+                displayError("driver-name", "Name should contain only letters.");
+                return false;
+            } else {
+                clearError("driver-name");
+            }
+    
+            // Validate email
+            var emailInput = document.getElementById("email");
+            if (!validateEmail(emailInput.value)) {
+                displayError("email", "Please enter a valid email address.");
+                return false;
+            } else {
+                clearError("email");
+            }
+    
+            // Validate contact number
+            var contactNumberInput = document.getElementById("contact-number");
+            if (!validateContactNumber(contactNumberInput.value)) {
+                displayError("contact-number", "Contact number should contain exactly 10 numbers.");
+                return false;
+            } else {
+                clearError("contact-number");
+            }
+    
+            // Add additional validation logic for other fields here
+    
+            return true; // Form submission will proceed if all validations pass
+        }
+    </script>
+    
+    
+</body>
+
+</html>

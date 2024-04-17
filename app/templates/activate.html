@@ -1,0 +1,34 @@
+from django.core.mail import send_mail
+
+def adminreg(request):
+    if request.method == 'POST':
+        for user in Usertable.objects.exclude(is_superuser=True):
+            status_field_name = f'user_status_{user.email}'
+            if status_field_name in request.POST:
+                user = Usertable.objects.get(email=user.email)
+                previous_status = user.is_active  # Store the previous status
+                user.is_active = request.POST.get(status_field_name) == 'on'
+                user.save()
+                
+                if not user.is_active and previous_status:
+                    # Send an email to the user notifying them of deactivation
+                    send_mail(
+                        'Account Deactivation',
+                        'Your account has been deactivated. Please contact the admin for more information.',
+                        'admin@example.com',  # Replace with your email address
+                        [user.email],  # Send the email to the user
+                        fail_silently=False,
+                    )
+
+    # Retrieve users based on their roles
+    admin_users = Usertable.objects.filter(role='admin')
+    normal_users = Usertable.objects.filter(role='normal_user')
+    club_users = Usertable.objects.filter(role='club_user')
+
+    context = {
+        'admin_users': admin_users,
+        'normal_users': normal_users,
+        'club_users': club_users,
+    }
+
+    return render(request, 'adminreg.html', context)

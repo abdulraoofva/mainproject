@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #007bff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-confirm {
+            background-color: #28a745;
+        }
+
+        .btn-confirm:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Confirmation</h1>
+        
+        {% if error_message %}
+            <p>{{ error_message }}</p>
+        {% else %}
+            <h2>Shipping Information:</h2>
+            <p><strong>Full Name:</strong> {{ checkout.full_name }}</p>
+            <p><strong>Address Line 1:</strong> {{ checkout.address_line_1 }}</p>
+            <p><strong>Address Line 2:</strong> {{ checkout.address_line_2 }}</p>
+            <p><strong>City:</strong> {{ checkout.city }}</p>
+            <p><strong>State:</strong> {{ checkout.state }}</p>
+            <p><strong>Pin Code:</strong> {{ checkout.pin_code }}</p>
+            <p><strong>Phone Number:</strong> {{ checkout.phone_number }}</p>
+
+            <h2>Items to Confirm:</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Accessory</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in checkout_items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.product.price }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.subtotal }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <button class="btn btn-confirm" id="pay-btn">Confirm to Payment</button>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        var options = {
+            key: "{{ razorpay_merchant_key }}",
+            amount: "{{ razorpay_amount }}",
+            currency: "{{ currency }}",
+            order_id: "{{ razorpay_order_id }}",
+            callback_url: "{{ callback_url }}",
+            handler: function (response) {
+                // Handle the payment success response here
+                console.log(response);
+                window.location.href = ""; // Redirect to payment success URL
+            },
+            prefill: {
+                name: "{{ checkout.full_name }}",
+                email: "{{ checkout.email }}"
+            },
+            theme: {
+                color: "#F37254"
+            },
+            modal: {
+                ondismiss: function() {
+                    // Handle the case when the modal is dismissed
+                    console.log("Payment modal dismissed");
+                }
+            }
+        };
+
+        var rzp1 = new Razorpay(options);
+
+        document.getElementById("pay-btn").onclick = function (e) {
+            rzp1.open();
+            e.preventDefault();
+        };
+    </script>
+</body>
+</html>
